@@ -358,6 +358,31 @@
             margin-top: 40px;
         }
 
+        .screenshot-container {
+            background: var(--code-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .screenshot-container img {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .screenshot-container img[src]:not([src=""]) + .placeholder {
+            display: none;
+        }
+
+        .feature-card img {
+            border-radius: 8px 8px 0 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
         @media (max-width: 768px) {
             header h1 {
                 font-size: 2em;
@@ -408,9 +433,30 @@
             <h2><span class="icon">📊</span> סקירה כללית</h2>
 
             <p>
-                מערכת ה-Observability של CodeBot מספקת ניטור מקיף לבוטי טלגרם, כולל איסוף מטריקות בזמן אמת,
+                מדריך זה מציג כיצד לבנות מערכת Observability מקיפה לבוטי טלגרם, הכוללת איסוף מטריקות בזמן אמת,
                 זיהוי אנומליות, ניהול התראות ויכולות אנליזה מתקדמות.
             </p>
+
+            <div class="alert-box alert-warning">
+                <span style="font-size: 1.5em;">📦</span>
+                <div>
+                    <strong>תלויות (Dependencies):</strong> מערכת זו מסתמכת על ה-Stack הטכנולוגי הבא:
+                    <ul style="margin-top: 10px; margin-bottom: 0;">
+                        <li><strong>Python</strong> - שפת התכנות הראשית (Flask לממשק ה-Web)</li>
+                        <li><strong>MongoDB</strong> - אחסון התראות ומטריקות היסטוריות</li>
+                        <li><strong>Prometheus</strong> - איסוף וחשיפת מטריקות</li>
+                        <li><strong>Grafana</strong> - ויזואליזציה ודשבורדים (אופציונלי)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="alert-box alert-info">
+                <span style="font-size: 1.5em;">🔧</span>
+                <div>
+                    <strong>התאמה אישית:</strong> הקוד במדריך מכיל שמות ספציפיים כמו <code>codebot_handler</code>. 
+                    בעת השימוש במדריך, החליפו את השמות האלו לשם הבוט שלכם (לדוגמה: <code>mybot_handler</code>).
+                </div>
+            </div>
 
             <div class="grid-2">
                 <div class="feature-card">
@@ -548,13 +594,13 @@
                         <td>סופר את כל העדכונים הנכנסים מטלגרם</td>
                     </tr>
                     <tr>
-                        <td><code>codebot_handler_requests_total</code></td>
+                        <td><code>{yourbot}_handler_requests_total</code></td>
                         <td>Counter</td>
                         <td>handler_name, status</td>
                         <td>מספר הפעלות של כל handler</td>
                     </tr>
                     <tr>
-                        <td><code>codebot_handler_latency_seconds</code></td>
+                        <td><code>{yourbot}_handler_latency_seconds</code></td>
                         <td>Histogram</td>
                         <td>handler_name</td>
                         <td>זמן תגובה של handlers</td>
@@ -575,6 +621,12 @@
             </table>
 
             <h3>הגדרת מטריקות - metrics.py</h3>
+            <div class="alert-box alert-info" style="margin-bottom: 15px;">
+                <span style="font-size: 1.2em;">💡</span>
+                <div>
+                    <strong>שימו לב:</strong> החליפו את <code>codebot_handler</code> לשם הבוט שלכם (למשל: <code>mybot_handler</code>).
+                </div>
+            </div>
             <pre><code><span class="keyword">from</span> prometheus_client <span class="keyword">import</span> Counter, Histogram
 
 <span class="comment"># Counter למעקב אחר עדכוני טלגרם</span>
@@ -585,8 +637,9 @@
 )
 
 <span class="comment"># Histogram למדידת latency</span>
+<span class="comment"># שנו את הקידומת 'codebot' לשם הבוט שלכם</span>
 <span class="variable">handler_latency</span> = Histogram(
-    <span class="string">'codebot_handler_latency_seconds'</span>,
+    <span class="string">'codebot_handler_latency_seconds'</span>,  <span class="comment"># ← שנו ל-yourbot_handler_latency_seconds</span>
     <span class="string">'Handler response time in seconds'</span>,
     [<span class="string">'handler_name'</span>],
     buckets=[<span class="number">.005</span>, <span class="number">.01</span>, <span class="number">.025</span>, <span class="number">.05</span>, <span class="number">.1</span>, <span class="number">.25</span>, <span class="number">.5</span>, <span class="number">1</span>, <span class="number">2.5</span>, <span class="number">5</span>, <span class="number">10</span>]
@@ -625,7 +678,37 @@
         <section id="dashboard">
             <h2><span class="icon">🖥️</span> מבנה הדשבורד</h2>
 
-            <p>הדשבורד נגיש בכתובת <code>/admin/observability</code> ומציע מגוון תצוגות וכלים לניטור.</p>
+            <p>הדשבורד נגיש בכתובת <code>/admin/observability</code> (או בכתובת אחרת לפי הגדרתכם) ומציע מגוון תצוגות וכלים לניטור.</p>
+
+            <h3>צילומי מסך מדשבורד לדוגמה</h3>
+            <!-- 
+                הוראות להוספת צילומי מסך:
+                שמרו את קבצי התמונות באותה תיקייה עם הקובץ index.html:
+                - screenshot-dashboard-main.png (דשבורד ראשי)
+                - screenshot-alerts-history.png (היסטוריית התראות)
+            -->
+            <div class="grid-2" style="margin-bottom: 25px;">
+                <div class="feature-card" style="padding: 0; overflow: hidden;">
+                    <img src="screenshot-dashboard-main.png" alt="דשבורד Observability ראשי" style="width: 100%; height: auto; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="screenshot-container" style="display: none; min-height: 250px;">
+                        <span>📊 דשבורד ראשי - screenshot-dashboard-main.png</span>
+                    </div>
+                    <div style="padding: 15px;">
+                        <h4 style="margin-top: 0;">דשבורד ראשי</h4>
+                        <p style="margin-bottom: 0;">תצוגת KPIs, גרפים של זמני תגובה והתראות לפי חומרה, וטבלת endpoints איטיים.</p>
+                    </div>
+                </div>
+                <div class="feature-card" style="padding: 0; overflow: hidden;">
+                    <img src="screenshot-alerts-history.png" alt="היסטוריית התראות" style="width: 100%; height: auto; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="screenshot-container" style="display: none; min-height: 250px;">
+                        <span>🚨 היסטוריית התראות - screenshot-alerts-history.png</span>
+                    </div>
+                    <div style="padding: 15px;">
+                        <h4 style="margin-top: 0;">היסטוריית התראות</h4>
+                        <p style="margin-bottom: 0;">תצוגת התראות עם פילטרים, גרף timeline, ואפשרויות Quick Fix והסבר AI.</p>
+                    </div>
+                </div>
+            </div>
 
             <h3>מבנה הממשק</h3>
             <div class="architecture-diagram">
@@ -904,7 +987,7 @@
             <pre><code><span class="comment"># Metrics & Alerts Storage</span>
 <span class="variable">METRICS_DB_ENABLED</span>=<span class="keyword">true</span>
 <span class="variable">ALERTS_DB_ENABLED</span>=<span class="keyword">true</span>
-<span class="variable">MONGODB_URL</span>=<span class="string">mongodb://localhost:27017/codebot</span>
+<span class="variable">MONGODB_URL</span>=<span class="string">mongodb://localhost:27017/yourbot</span>  <span class="comment"># שנו ל-DB שלכם</span>
 <span class="variable">METRICS_COLLECTION</span>=<span class="string">service_metrics</span>
 <span class="variable">ALERTS_COLLECTION</span>=<span class="string">alerts_log</span>
 
@@ -1080,15 +1163,16 @@
                         <td>תצוגת Incident Replay</td>
                     </tr>
                     <tr>
-                        <td><code>docker/grafana/provisioning/dashboards/codebot-dashboard.json</code></td>
+                        <td><code>docker/grafana/provisioning/dashboards/yourbot-dashboard.json</code></td>
                         <td>קונפיגורציית דשבורד Grafana</td>
                     </tr>
                 </tbody>
             </table>
 
             <h3>מבנה התיקיות</h3>
+            <p style="margin-bottom: 10px;">להלן מבנה תיקיות לדוגמה - התאימו לפרויקט שלכם:</p>
             <div class="file-tree">
-<span class="folder">CodeBot/</span>
+<span class="folder">YourBot/</span>  <span class="comment"># שם הפרויקט שלכם</span>
 ├── <span class="file">metrics.py</span>                    <span class="comment"># Prometheus metrics definitions</span>
 ├── <span class="file">alert_manager.py</span>              <span class="comment"># Adaptive threshold checking</span>
 ├── <span class="file">alert_forwarder.py</span>            <span class="comment"># Alert routing</span>
@@ -1120,7 +1204,7 @@
 │
 └── <span class="folder">docker/grafana/provisioning/</span>
     └── <span class="folder">dashboards/</span>
-        └── <span class="file">codebot-dashboard.json</span> <span class="comment"># Grafana dashboard</span>
+        └── <span class="file">yourbot-dashboard.json</span> <span class="comment"># Grafana dashboard</span>
             </div>
         </section>
 
@@ -1143,8 +1227,9 @@
                 </div>
                 <div class="feature-card">
                     <h4>Handler Requests/sec</h4>
-                    <pre><code><span class="function">sum</span>(<span class="function">rate</span>(
-  codebot_handler_requests_total[<span class="number">1m</span>]
+                    <pre><code><span class="comment"># שנו את הקידומת לשם הבוט שלכם</span>
+<span class="function">sum</span>(<span class="function">rate</span>(
+  yourbot_handler_requests_total[<span class="number">1m</span>]
 ))</code></pre>
                     <p>סה"כ בקשות ל-handlers בשנייה</p>
                 </div>
@@ -1227,8 +1312,8 @@
         </section>
 
         <footer>
-            <p>מדריך דשבורד Observability לבוטי טלגרם - CodeBot</p>
-            <p style="margin-top: 10px;">נוצר על בסיס המימוש בפרויקט</p>
+            <p>מדריך דשבורד Observability לבוטי טלגרם</p>
+            <p style="margin-top: 10px;">נוצר על בסיס המימוש בפרויקט <a href="https://code-keeper-webapp.onrender.com" target="_blank" style="color: var(--primary-color);">CodeKeeper</a></p>
         </footer>
     </div>
 </body>
